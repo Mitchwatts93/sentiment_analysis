@@ -33,7 +33,7 @@ class FlairExplainer:
         predict = self.classifier.predict
         print('made func global')
         with poolcontext(processes=cpu_count()) as pool:
-            print(running)
+            print('running')
             docs[:] = list(pool.imap(predictor, docs))
         labels = [[x.value for x in doc[0].labels] for doc in docs]#assumes only one sentence per doc
         probs = [[x.score for x in doc[0].labels] for doc in docs]
