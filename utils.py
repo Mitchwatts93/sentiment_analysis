@@ -44,7 +44,7 @@ def load_model():
     """Load in the pre-trained model"""
     from flair.models import TextClassifier
     global model
-    model = TextClassifier.load('./en-sentiment')
+    model = TextClassifier.load('./imdb-v0.4.pt')
     return model
 
 

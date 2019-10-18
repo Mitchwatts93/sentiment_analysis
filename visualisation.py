@@ -3,7 +3,18 @@ from flair.data import Sentence
 from tqdm import tqdm as tqdm
 import numpy as np
 from functools import partial
+from contextlib import contextmanager
 
+@contextmanager
+def poolcontext(*args, **kwargs):
+    from multiprocessing import Pool
+    pool = Pool(*args, **kwargs)
+    yield pool
+    pool.terminate()
+
+def predictor(text):
+    prediction = predict(text, multi_class_prob = True)
+    return prediction
 
 class FlairExplainer:
 
@@ -11,8 +22,14 @@ class FlairExplainer:
         self.classifier = clf
 
     def predict(self, texts):
-        docs = [Sentence(text) for text in texts]
-        docs[:] = map(partial(self.classifier.predict, multi_class_prob=True), tqdm(docs))
+        from multiprocessing import cpu_count
+        docs = list([Sentence(text) for text in texts])
+        global predict
+        print('made predictor global')
+        predict = self.classifier.predict
+        print('made func global')
+        with poolcontext(processes=cpu_count()) as pool:
+            docs[:] = list(tqdm(pool.imap(predictor, docs), total=len(docs)))
         labels = [[x.value for x in doc[0].labels] for doc in docs]#assumes only one sentence per doc
         probs = [[x.score for x in doc[0].labels] for doc in docs]
         probs = np.array(probs)   # Convert probabilities to Numpy array
@@ -20,7 +37,7 @@ class FlairExplainer:
         # For each prediction, sort the probability scores in the same order for all texts
         result = []
         for label, prob in zip(labels, probs):
-            order = np.argsort(np.array(label))[::-1] # negative positive
+            order = np.argsort(np.array(label))
             result.append(prob[order])
         return np.array(result)
 
@@ -35,13 +52,12 @@ def explainer(clf, text):
     explainer = LimeTextExplainer(
         split_expression=lambda x: x.split(),
         bow=False,
-        class_names=["POSITIVE", "NEGATIVE"]
+        class_names=["NEGATIVE", "POSITIVE"]
     )
     exp = explainer.explain_instance(
         text,
         classifier_fn=predictor,
-        num_features=20,
-        num_samples=100
+        num_samples=1000
     )
     return exp
 
