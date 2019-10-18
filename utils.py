@@ -21,6 +21,11 @@ def generate_sentiment_html(eval_text):
 
 def get_sentiment(eval_text):
     from flair.data import Sentence
+    try:
+        if model:
+            pass
+    except NameError as e:
+        pass
     model = load_model()
     S = Sentence(eval_text)
     sentiment, confidence = eval_model(model, S)
@@ -38,6 +43,7 @@ def eval_model(model, sentence_obj):
 def load_model():
     """Load in the pre-trained model"""
     from flair.models import TextClassifier
+    global model
     model = TextClassifier.load('./en-sentiment')
     return model
 
