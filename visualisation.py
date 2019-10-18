@@ -4,10 +4,12 @@ from tqdm import tqdm as tqdm
 import numpy as np
 from functools import partial
 from contextlib import contextmanager
+from multiprocessing import Pool
+from multiprocessing import cpu_count
 
 @contextmanager
 def poolcontext(*args, **kwargs):
-    from multiprocessing import Pool
+
     pool = Pool(*args, **kwargs)
     yield pool
     pool.terminate()
@@ -16,20 +18,23 @@ def predictor(text):
     prediction = predict(text, multi_class_prob = True)
     return prediction
 
+
+#### the lime explainer doesn't work so well for positive sentiment, it gets it correct overall but maybe something weird going on?
+
 class FlairExplainer:
 
     def __init__(self, clf):
         self.classifier = clf
 
     def predict(self, texts):
-        from multiprocessing import cpu_count
         docs = list([Sentence(text) for text in texts])
         global predict
         print('made predictor global')
         predict = self.classifier.predict
         print('made func global')
         with poolcontext(processes=cpu_count()) as pool:
-            docs[:] = list(tqdm(pool.imap(predictor, docs), total=len(docs)))
+            print(running)
+            docs[:] = list(pool.imap(predictor, docs))
         labels = [[x.value for x in doc[0].labels] for doc in docs]#assumes only one sentence per doc
         probs = [[x.score for x in doc[0].labels] for doc in docs]
         probs = np.array(probs)   # Convert probabilities to Numpy array
