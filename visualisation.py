@@ -7,9 +7,6 @@ from functools import partial
 from contextlib import contextmanager
 from multiprocessing import cpu_count
 
-import matplotlib as mpl
-mpl.use('Agg')
-
 import concurrent.futures
 
 @contextmanager
@@ -19,27 +16,28 @@ def poolcontext(*args, **kwargs):
     pool.terminate()
 
 def predictor(text):
-    prediction = predict(text, multi_class_prob = True)
+    prediction = prediction(text, multi_class_prob = True)
     return prediction
 
 
-#### the lime explainer doesn't work so well for positive sentiment, it gets it correct overall but maybe something weird going on?
+#### todo:
+## the lime explainer doesn't work so well for positive sentiment, it gets it correct overall but maybe something weird going on?
+## fix whatever is going on with the weird model evaluation - is incorrect, might just be too small sample size
+## add some text explaining how it works?
+## why does screen not show up on ls?
+## unknown internal server error!
 
 class FlairExplainer:
 
-    def __init__(self, clf):
-        self.classifier = clf
+    def __init__(self, model):
+        self.model = model
 
     def predict(self, texts):
         docs = list([Sentence(text) for text in texts])
 
         # aws uses vCPUs so process pool is super slow, threading works well!
-        global predict
-        print('made predictor global')
-        predict = self.classifier.predict
         print('cpus: ', cpu_count())
-        print('made func global')
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor: # use with so threads are cleaned up
             docs[:] = list(tqdm(executor.map(predictor, docs), total=len(docs)))
         labels = [[x.value for x in doc[0].labels] for doc in docs]#assumes only one sentence per doc
         probs = [[x.score for x in doc[0].labels] for doc in docs]
@@ -53,12 +51,11 @@ class FlairExplainer:
         return np.array(result)
 
 
-def explainer(clf, text):
+def explainer(model, text):
     """Run LIME explainer on provided classifier"""
     from lime.lime_text import LimeTextExplainer
 
-    model = FlairExplainer(clf)
-    predictor = model.predict
+    model = FlairExplainer(model)
 
     explainer = LimeTextExplainer(
         split_expression=lambda x: x.split(),
@@ -67,7 +64,7 @@ def explainer(clf, text):
     )
     exp = explainer.explain_instance(
         text,
-        classifier_fn=predictor,
+        classifier_fn=model.predict,
         num_samples=10
     )
     return exp
@@ -92,10 +89,14 @@ def visualise_sentiments(data):
     return fig
 
 
-### TODO
-# fix whatever is going on with the weird model evaluation - is incorrect, might just be too small sample size
 
 def return_html(sentiment, confidence, model, eval_text):
+    import matplotlib as mpl
+    mpl.use('Agg')
+
+    global prediction
+    prediction = model.predict
+
     sentiment = (-1)**(sentiment=="NEGATIVE") # a bit hacky so sort that out. is 1 if positive and -1 if neg
 
     exp = explainer(model, eval_text)
