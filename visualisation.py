@@ -3,16 +3,17 @@ from flair.data import Sentence
 from tqdm import tqdm as tqdm
 import numpy as np
 from functools import partial
+
 from contextlib import contextmanager
-from multiprocessing import Pool
 from multiprocessing import cpu_count
 
 import matplotlib as mpl
 mpl.use('Agg')
 
+import concurrent.futures
+
 @contextmanager
 def poolcontext(*args, **kwargs):
-
     pool = Pool(*args, **kwargs)
     yield pool
     pool.terminate()
@@ -31,13 +32,15 @@ class FlairExplainer:
 
     def predict(self, texts):
         docs = list([Sentence(text) for text in texts])
+
+        # aws uses vCPUs so process pool is super slow, threading works well!
         global predict
         print('made predictor global')
         predict = self.classifier.predict
+        print('cpus: ', cpu_count())
         print('made func global')
-        with poolcontext(processes=cpu_count()) as pool:
-            print('running')
-            docs[:] = list(tqdm(pool.imap(predictor, docs), total=len(docs)))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            docs[:] = list(tqdm(executor.map(predictor, docs), total=len(docs)))
         labels = [[x.value for x in doc[0].labels] for doc in docs]#assumes only one sentence per doc
         probs = [[x.score for x in doc[0].labels] for doc in docs]
         probs = np.array(probs)   # Convert probabilities to Numpy array
