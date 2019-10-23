@@ -15,11 +15,6 @@ def poolcontext(*args, **kwargs):
     yield pool
     pool.terminate()
 
-def predictor(text):
-    prediction = prediction(text, multi_class_prob = True)
-    return prediction
-
-
 #### todo:
 ## the lime explainer doesn't work so well for positive sentiment, it gets it correct overall but maybe something weird going on?
 ## fix whatever is going on with the weird model evaluation - is incorrect, might just be too small sample size
@@ -112,6 +107,10 @@ def return_html(sentiment, confidence, model, eval_text):
     html = html_from_fig(fig)
     plt.clf()
     return html
+
+def predictor(text):
+    prediction = prediction(text, multi_class_prob = True)
+    return prediction
 
 def html_from_fig(fig):
     from io import BytesIO
