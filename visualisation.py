@@ -15,6 +15,13 @@ def poolcontext(*args, **kwargs):
     yield pool
     pool.terminate()
 
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+fig = plt.gcf()
+figsize = fig.get_size_inches()
+fig.set_size_inches(figsize[0]*3, figsize[1]*2) # make it wider than default - a bit of hacky solution
+
 #### todo:
 ## the lime explainer doesn't work so well for positive sentiment, it gets it correct overall but maybe something weird going on?
 ## fix whatever is going on with the weird model evaluation - is incorrect, might just be too small sample size
@@ -73,9 +80,6 @@ def visualise_sentiments(data):
     import seaborn as sns
     import pandas as pd
     cmap = cm.coolwarm.reversed()
-    fig = plt.gcf()
-    figsize = fig.get_size_inches()
-    fig.set_size_inches(figsize[0]*3, figsize[1]*2) # make it wider than default - a bit of hacky solution
     ax = sns.heatmap(pd.DataFrame(data).set_index("Sentence").T, center=0, annot=True, cmap=cmap)
     fig = ax.get_figure()
     fig.patch.set_facecolor('white')
@@ -87,8 +91,7 @@ def visualise_sentiments(data):
 
 
 def return_html(sentiment, confidence, model, eval_text):
-    import matplotlib as mpl
-    mpl.use('Agg')
+
 
     global prediction
     prediction = model.predict
