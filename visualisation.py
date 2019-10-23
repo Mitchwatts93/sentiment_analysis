@@ -7,6 +7,9 @@ from contextlib import contextmanager
 from multiprocessing import Pool
 from multiprocessing import cpu_count
 
+import matplotlib as mpl
+mpl.use('Agg')
+
 @contextmanager
 def poolcontext(*args, **kwargs):
 
@@ -34,7 +37,7 @@ class FlairExplainer:
         print('made func global')
         with poolcontext(processes=cpu_count()) as pool:
             print('running')
-            docs[:] = list(pool.imap(predictor, docs))
+            docs[:] = list(tqdm(pool.imap(predictor, docs), total=len(docs)))
         labels = [[x.value for x in doc[0].labels] for doc in docs]#assumes only one sentence per doc
         probs = [[x.score for x in doc[0].labels] for doc in docs]
         probs = np.array(probs)   # Convert probabilities to Numpy array
@@ -67,6 +70,7 @@ def explainer(clf, text):
     return exp
 
 def visualise_sentiments(data):
+
     from matplotlib.figure import Figure
     import matplotlib.pyplot as plt
     from matplotlib import cm
