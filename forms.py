@@ -3,6 +3,8 @@ from flask import Flask, render_template, request
 from utils import eval_from_input
 from utils import load_model
 
+model = load_model()
+
 #create app
 app = Flask(__name__)
 
@@ -15,8 +17,6 @@ class WebForm(Form):
 def home():
     "home page with form"
     form = WebForm(request.form)
-    model = load_model()
-
 
     if request.method == 'POST' and form.validate():
         eval_text = request.form['eval_text']
