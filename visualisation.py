@@ -91,6 +91,10 @@ def visualise_sentiments(data):
     del ax
     return fig
 
+
+### TODO
+# fix whatever is going on with the weird model evaluation - is incorrect, might just be too small sample size
+
 def return_html(sentiment, confidence, model, eval_text):
     sentiment = (-1)**(sentiment=="NEGATIVE") # a bit hacky so sort that out. is 1 if positive and -1 if neg
 
