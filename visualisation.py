@@ -75,7 +75,7 @@ def visualise_sentiments(data):
     cmap = cm.coolwarm.reversed()
     fig = plt.gcf()
     figsize = fig.get_size_inches()
-    fig.set_size_inches(figsize[0], figsize[1]) # make it wider than default - a bit of hacky solution
+    fig.set_size_inches(figsize[0]*3, figsize[1]*2) # make it wider than default - a bit of hacky solution
     ax = sns.heatmap(pd.DataFrame(data).set_index("Sentence").T, center=0, annot=True, cmap=cmap)
     fig = ax.get_figure()
     fig.patch.set_facecolor('white')
@@ -108,6 +108,7 @@ def return_html(sentiment, confidence, model, eval_text):
     html = html_from_fig(fig)
     plt.clf()
     del fig
+    del plt
     return html
 
 #def predictor(text):
