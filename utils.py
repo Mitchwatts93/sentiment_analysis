@@ -15,7 +15,7 @@ def eval_from_input(eval_text, model):
 
 
 def generate_sentiment_html(eval_text, model):
-    sentiment, confidence, model = get_sentiment(eval_text, model)
+    sentiment, confidence = get_sentiment(eval_text, model)
     html = return_html(sentiment, confidence, model, eval_text)
     return html
 
