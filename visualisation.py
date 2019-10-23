@@ -107,6 +107,7 @@ def return_html(sentiment, confidence, model, eval_text):
     })
     html = html_from_fig(fig)
     plt.clf()
+    del fig
     return html
 
 #def predictor(text):
