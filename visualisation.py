@@ -32,8 +32,9 @@ class FlairExplainer:
 
         # aws uses vCPUs so process pool is super slow, threading works well!
         print('cpus: ', cpu_count())
+        func = partial(prediction, multi_class_prob = True)
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor: # use with so threads are cleaned up
-            docs[:] = list(tqdm(executor.map(predictor, docs), total=len(docs)))
+            docs[:] = list(tqdm(executor.map(func, docs), total=len(docs)))
         labels = [[x.value for x in doc[0].labels] for doc in docs]#assumes only one sentence per doc
         probs = [[x.score for x in doc[0].labels] for doc in docs]
         probs = np.array(probs)   # Convert probabilities to Numpy array
@@ -108,9 +109,9 @@ def return_html(sentiment, confidence, model, eval_text):
     plt.clf()
     return html
 
-def predictor(text):
-    prediction = prediction(text, multi_class_prob = True)
-    return prediction
+#def predictor(text):
+#    prediction = prediction(text, multi_class_prob = True)
+#    return prediction
 
 def html_from_fig(fig):
     from io import BytesIO
