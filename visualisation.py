@@ -68,7 +68,7 @@ def explainer(clf, text):
     exp = explainer.explain_instance(
         text,
         classifier_fn=predictor,
-        num_samples=1000
+        num_samples=10
     )
     return exp
 
