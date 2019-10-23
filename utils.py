@@ -1,10 +1,10 @@
 from visualisation import return_html
 
-def eval_from_input(eval_text):
+def eval_from_input(eval_text, model):
     """Generate output from a sequence"""
 
     ### replace this bit with generating an output instead
-    html_result = generate_sentiment_html(eval_text)
+    html_result = generate_sentiment_html(eval_text, model)
 
     # Formatting in html
     html = ''
@@ -14,23 +14,16 @@ def eval_from_input(eval_text):
     return f'<div>{html}</div>'
 
 
-def generate_sentiment_html(eval_text):
-    sentiment, confidence, model = get_sentiment(eval_text)
+def generate_sentiment_html(eval_text, model):
+    sentiment, confidence, model = get_sentiment(eval_text, model)
     html = return_html(sentiment, confidence, model, eval_text)
     return html
 
-def get_sentiment(eval_text):
+def get_sentiment(eval_text, model):
     from flair.data import Sentence
-    try:
-        if model:
-            pass
-    except NameError as e:
-        pass
-    model = load_model()
     S = Sentence(eval_text)
     sentiment, confidence = eval_model(model, S)
-    # should also do the explaining in here but will need to change name
-    return sentiment, confidence, model  # this will be fixed in the future
+    return sentiment, confidence  # this will be fixed in the future
 
 
 def eval_model(model, sentence_obj):
@@ -43,7 +36,6 @@ def eval_model(model, sentence_obj):
 def load_model():
     """Load in the pre-trained model"""
     from flair.models import TextClassifier
-    global model
     model = TextClassifier.load('./imdb-v0.4.pt')
     return model
 
