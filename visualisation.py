@@ -36,7 +36,6 @@ class FlairExplainer:
 
     def predict(self, texts):
         docs = list([Sentence(text) for text in texts])
-
         # aws uses vCPUs so process pool is super slow, threading works well!
         print('cpus: ', cpu_count())
         func = partial(prediction, multi_class_prob = True)
@@ -45,7 +44,6 @@ class FlairExplainer:
         labels = [[x.value for x in doc[0].labels] for doc in docs]#assumes only one sentence per doc
         probs = [[x.score for x in doc[0].labels] for doc in docs]
         probs = np.array(probs)   # Convert probabilities to Numpy array
-
         # For each prediction, sort the probability scores in the same order for all texts
         result = []
         for label, prob in zip(labels, probs):
@@ -73,7 +71,6 @@ def explainer(model, text):
     return exp
 
 def visualise_sentiments(data):
-
     from matplotlib.figure import Figure
     import matplotlib.pyplot as plt
     from matplotlib import cm
@@ -89,10 +86,7 @@ def visualise_sentiments(data):
     return fig
 
 
-
 def return_html(sentiment, confidence, model, eval_text):
-
-
     global prediction
     prediction = model.predict
 
