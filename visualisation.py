@@ -41,23 +41,9 @@ class FlairExplainer:
         func = partial(prediction, multi_class_prob = True)
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor: # use with so threads are cleaned up
             docs[:] = list(tqdm(executor.map(func, docs), total=len(docs)))
-<<<<<<< HEAD
         probs = [[x.score for x in doc[0].labels] for doc in docs]
         probs = np.array(probs)   # Convert probabilities to Numpy array
         return probs 
-=======
-        labels = [[x.value for x in doc[0].labels] for doc in docs]#assumes only one sentence per doc
-        probs = [[x.score for x in doc[0].labels] for doc in docs]
-        probs = np.array(probs)   # Convert probabilities to Numpy array
-        # For each prediction, sort the probability scores in the same order for all texts
-        result = []
-        for label, prob in zip(labels, probs):
-            order = np.argsort(np.array(label))
-            result.append(prob[order])
-        return np.array(result)
-
->>>>>>> 262daba6769237d807dab01c287d9eb1cf40da31
-
 def explainer(model, text):
     """Run LIME explainer on provided classifier"""
     from lime.lime_text import LimeTextExplainer
