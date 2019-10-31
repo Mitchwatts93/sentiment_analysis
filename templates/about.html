@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html>
+
+
+<header>
+	    <title>Evaluate Input Passage
+			</title>
+			    <link rel="stylesheet" href="/static/css/main.css">
+				<link rel="shortcut icon" href="/static/images/lstm.ico">
+				    <ul>
+						    <li><a href="/">Home</a></li>
+							</ul>
+</header>
+
+<body>
+	<div class="container">
+		<h1>
+			    <center>How Does it Work?</center>
+		</h1>
+		<div align=left style="border-bottom:1px inset black;border-top:1px inset black;padding:8px;font-size: 15px;">
+			<h3 align=left>
+				The model
+			</h3>
+			<p>
+				The model used here is a pretrained model from Flair ('en-sentiment') which is built using stacked flair embeddings: (crawl, flair embeddings on news forward, flair embeddings news backwards), these are generated for the sentence and evaluated, then passed into a linear layer with dropout. The whole model was pretrained by Flair on the IMDB reviews dataset, with either positive or negative sentiment. For this reason there is no fine-grained sentiment prediction, only a positve or negative prediction with a confidence score. A future iteration of this project will retrain the model with fine-grained sentiment.
+			
+			For more information about Flair embeddings see their paper: https://www.aclweb.org/anthology/N19-4010/
+			</p>
+			
+			<h3 align=left>
+				The Explainer
+			</h3>
+			<p>
+			The model is explained using the LIME (Local Interpretable Model-agnostic Explanations) python package. This works by treating the model as a black box, then perturbing the instance in order to fit a linear model around the instance as an explanation. In this case, it means that many samples are generated of the same line of text, with the tag <UNKWORD> replacing words in the input, each of these new samples is then evaluated with the model, and a linear model fit to that in order to discover the weights of the model for each word for each class. The accuracy is increased with an increasing number of samples generated.
+
+			Currently the parameters for this model are to only generate 50 samples to evaluate, so the predictions may be off for longer sentences. This is set to reduce inference cost and speed up the evaluation. 
+
+			For more information about LIME, see the paper: https://arxiv.org/pdf/1602.04938
+			</p>
+
+			<h3 align=left>
+				The deployment
+			</h3>
+			<p>
+				This is all deployed on an AWS EC2 instance, which unfortunately is a paid instance. My preference was to do model evaluation using AWS Lambda, however after a while trying to fit the packages and model into the limited memory, I ran into a barrier as the model itself is too large to fit into the allocated RAM. In future I may train my own model using less memory intensive language models as the embeddings, which may allow the model inference to be done on AWS Lambda.
+
+				As the instance is paid, the hours it runs are currently 10AM - 3PM GMT, and the instance is automatically scheduled using the AWS CloudFormation template with edited office hours. When the instance starts, it has been configured to automatically start Gunicorn and serve the Flask app. Flask has been used to run the application, Gunicorn to serve it which is running on an NGINX server.
+			</p>
+
+		</div>
+</body>
+
+</html>
